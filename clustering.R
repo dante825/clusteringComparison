@@ -11,13 +11,23 @@ head(trainData)
 str(trainData)
 
 ############### Data Preprocessing ###################s
-# Just using the features with numeric value for clustering
-library(dplyr)
-# trainData <- trainData %>% select(Item_Visibility, Item_MRP, Item_Outlet_Sales)
-trainData <- trainData %>% select(Item_MRP, Item_Outlet_Sales)
-
+# Checking the NA values
 sum(is.na(trainData))
 trainData[!complete.cases(trainData),]
+sum(is.na(trainData$Item_Weight))
+
+# Infer the mean to the NAs
+trainData$Item_Weight[is.na(trainData$Item_Weight)] <- mean(trainData$Item_Weight, na.rm=T)
+
+# No more NA after inferring the mean to the NAs
+sum(is.na(trainData))
+
+# Just using the features with numeric value for clustering
+library(dplyr)
+
+# trainData <- trainData %>% select(Item_Weight, Item_Visibility, Item_MRP, Item_Outlet_Sales)
+trainData <- trainData %>% select(Item_MRP, Item_Weight, Item_Visibility)
+
 
 ###################### K-means ####################
 
@@ -41,7 +51,7 @@ ykmeans <- kmeans$cluster
 
 # Visualizing the clusters
 clusplot(trainData, ykmeans, lines = 0, shade = T, color = T, labels = 2, plotchar = F, span = T, 
-         main = 'Clusters of Items', ylab = 'Item Outlet Sales')
+         main = 'Clusters of Items', xlab = 'X', ylab = 'Y')
 
 
 
@@ -69,5 +79,5 @@ clusplot(trainData,
          plotchar = FALSE,
          span = TRUE,
          main = paste('Clusters of items'),
-         xlab = 'Item Visibility',
-         ylab = 'Item Outlet Sales')
+         xlab = 'X',
+         ylab = 'Y')
