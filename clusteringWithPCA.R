@@ -38,6 +38,15 @@ sum(martData$Item_Visibility == 0)
 martData$Item_Visibility <- ifelse(martData$Item_Visibility == 0, median(martData$Item_Visibility),
                                    martData$Item_Visibility)
 
+# Cleaning the levels of the factor
+sum(martData$Item_Fat_Content=='LF')
+martData$Item_Fat_Content <- ifelse(martData$Item_Fat_Content == 'LF', 'Low Fat', martData$Item_Fat_Content)
+sum(martData$Item_Fat_Content=='low fat')
+martData$Item_Fat_Content <- ifelse(martData$Item_Fat_Content == 'low fat', 'Low Fat', martData$Item_Fat_Content)
+sum(martData$Item_Fat_Content=='reg')
+martData$Item_Fat_Content <- ifelse(martData$Item_Fat_Content == 'reg', 'Regular', martData$Item_Fat_Content)
+levels(martData$Item_Fat_Content) <- c('Low Fat', 'Regular')
+
 # Clustering is unsupervised so remove the response variable
 clusData <- martData %>% select(Item_Weight, Item_Fat_Content, Item_Type, Item_Visibility, Item_MRP, 
                                 Outlet_Establishment_Year, Outlet_Size, Outlet_Type, Outlet_Location_Type)
@@ -45,6 +54,7 @@ clusData <- martData %>% select(Item_Weight, Item_Fat_Content, Item_Type, Item_V
 colnames(clusData)
 str(clusData)
 
+############ Principal Component Analysis (PCA) #############
 ## Convert the categorical variables into continuous variables
 library(dummies)
 dummyDf <- dummy.data.frame(clusData, names = c('Item_Fat_Content', 'Item_Type', 'Outlet_Establishmen_Year',
@@ -53,8 +63,8 @@ dummyDf <- dummy.data.frame(clusData, names = c('Item_Fat_Content', 'Item_Type',
 str(dummyDf)
 
 # Divide the dataset into train and test, PCA should be perform on the train only
-pca.train <- dummyDf[1:nrow(trainData),]
-pca.test <- dummyDf[-(1:nrow(trainData))]
+# pca.train <- dummyDf[1:nrow(trainData),]
+# pca.test <- dummyDf[-(1:nrow(trainData))]
 
 ## Principal Component Analysis (PCA)
 impFeatures <- prcomp(dummyDf, scale. = T)
@@ -101,12 +111,6 @@ train2 <- data.frame(Item_Outlet_Sales = martData$Item_Outlet_Sales, impFeatures
 train2 <- train2[,1:30]
 
 ###################### K-means ####################
-# Just using the features with numeric value for clustering
-# library(dplyr)
-
-# trainData <- trainData %>% select(Item_Weight, Item_Visibility, Item_MRP, Item_Outlet_Sales)
-# kmeansData <- trainData %>% select(Item_MRP, Item_Weight, Item_Visibility)
-
 # Elbow method to detect the best number of clusters for K-means
 set.seed(123)
 vec <- vector()
@@ -131,21 +135,15 @@ clusplot(train2, ykmeans, lines = 0, shade = T, color = T, labels = 2, plotchar 
 
 
 ################## Hierarchical clustering ##################
-# hierData <- trainData %>% select(Item_MRP, Item_Weight, Item_Visibility, Item_Fat_Content, Item_Type, Outlet_Type,
-#                                  Outlet_Size)
-# hierData <- trainData %>% select(Item_Fat_Content, Item_Type, Outlet_Type,
-#                                  Outlet_Size, Outlet_Location_Type)
-
 # Using the dendrogram to find the optimal number of clusters
-dendrogram = hclust(d = dist(train2, method = 'euclidean'), method = 'ward.D')
-plot(dendrogram,
+hc = hclust(d = dist(train2, method = 'euclidean'), method = 'ward.D')
+plot(hc,
      main = paste('Dendrogram'),
      xlab = 'Items',
      ylab = 'Euclidean distances')
 
 # Fitting Hierarchical Clustering to the dataset
-hc = hclust(d = dist(train2, method = 'euclidean'), method = 'ward.D')
-y_hc = cutree(hc, 4)
+y_hc = cutree(hc, 3)
 
 # Visualising the clusters
 clusplot(train2,
