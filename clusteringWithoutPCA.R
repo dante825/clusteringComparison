@@ -40,13 +40,13 @@ martData$Item_Visibility <- ifelse(martData$Item_Visibility == 0, median(martDat
 
 # Cleaning the levels of the factor
 sum(martData$Item_Fat_Content=='LF')
-martData$Item_Fat_Content <- ifelse(martData$Item_Fat_Content == 'LF', 'Low Fat', martData$Item_Fat_Content)
+martData$Item_Fat_Content[martData$Item_Fat_Content=='LF'] <- 'Low Fat' 
 sum(martData$Item_Fat_Content=='low fat')
-martData$Item_Fat_Content <- ifelse(martData$Item_Fat_Content == 'low fat', 'Low Fat', martData$Item_Fat_Content)
+martData$Item_Fat_Content[martData$Item_Fat_Content=='low fat'] <- 'Low Fat'
 sum(martData$Item_Fat_Content=='reg')
-martData$Item_Fat_Content <- ifelse(martData$Item_Fat_Content == 'reg', 'Regular', martData$Item_Fat_Content)
-levels(martData$Item_Fat_Content) <- c('Low Fat', 'Regular')
-
+martData$Item_Fat_Content[martData$Item_Fat_Content=='reg'] <- 'Regular'
+martData$Item_Fat_Content <- factor(martData$Item_Fat_Content)
+levels(martData$Item_Fat_Content)
 
 # Clustering is unsupervised so remove the response variable
 clusData <- martData %>% select(Item_Weight, Item_Fat_Content, Item_Type, Item_Visibility, Item_MRP, 
@@ -57,7 +57,7 @@ str(clusData)
 
 ###################### K-means ####################
 # Just using the features with numeric value for clustering
-kmeansData <- martData %>% select(Item_MRP, Item_Weight, Item_Visibility)
+kmeansData <- clusData %>% select(Item_MRP, Item_Weight, Item_Visibility)
 
 # Elbow method to detect the best number of clusters for K-means
 set.seed(123)
@@ -77,36 +77,28 @@ kmeans <- kmeans(x = kmeansData, centers = 4)
 ykmeans <- kmeans$cluster
 
 # Visualizing the clusters
-clusplot(kmeansData, ykmeans, lines = 0, shade = T, color = T, labels = 2, plotchar = F, span = T, 
+clusplot(kmeansData, ykmeans, lines = 0, shade = T, color = T, plotchar = F, span = T, 
          main = 'Clusters of Items', xlab = 'X', ylab = 'Y')
 
 
 
 ################## Hierarchical clustering ##################
-hierData <- martData %>% select(Item_MRP, Item_Weight, Item_Visibility, Item_Fat_Content, Item_Type, Outlet_Type,
-                                 Outlet_Size)
+library(cluster)
+hierData <- clusData %>% select(Item_MRP, Item_Weight, Item_Visibility, Item_Fat_Content, Item_Type, Outlet_Type,
+                                Outlet_Size)
 
 gowerDist <- daisy(hierData, metric = 'gower')
 
-# Divisive clustering
-divisiveClus <- diana(as.matrix(gowerDist), diss = TRUE, keep.diss = TRUE)
-plot(divisiveClus, main = "Divisive")
-
-# Aggloromerative clustering
-agglClus <- hclust(gowerDist, method = 'complete')
-plot(agglClus, main = 'Agglomerative, complete linkage')
+# Aggloromerative clustering Dendogram
+hc <- hclust(gowerDist, method = 'complete')
+plot(hc, main = 'Agglomerative, complete linkage', xlab = 'Items', ylab = 'Gower distance')
 
 # Using the dendrogram to find the optimal number of clusters
-# dendrogram = hclust(d = dist(hierData, method = 'euclidean'), method = 'ward.D')
-# plot(dendrogram,
-#      main = paste('Dendrogram'),
-#      xlab = 'Items',
-#      ylab = 'Euclidean distances')
+# hc <- hclust(d = dist(hierData, method = 'euclidean'), method = 'ward.D')
+# plot(hc, main = paste('Dendrogram'), xlab = 'Items', ylab = 'Euclidean distances')
 
-# Fitting Hierarchical Clustering to the dataset
-# hc = hclust(d = dist(hierData, method = 'euclidean'), method = 'ward.D')
-
-y_hc = cutree(agglClus, 5)
+# Get the number of clusters based on the dendogram
+y_hc = cutree(hc, 6)
 
 # Visualising the clusters
 clusplot(hierData,
@@ -114,7 +106,6 @@ clusplot(hierData,
          lines = 0,
          shade = TRUE,
          color = TRUE,
-         labels= 2,
          plotchar = FALSE,
          span = TRUE,
          main = paste('Clusters of items'),

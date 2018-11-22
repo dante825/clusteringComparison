@@ -40,12 +40,13 @@ martData$Item_Visibility <- ifelse(martData$Item_Visibility == 0, median(martDat
 
 # Cleaning the levels of the factor
 sum(martData$Item_Fat_Content=='LF')
-martData$Item_Fat_Content <- ifelse(martData$Item_Fat_Content == 'LF', 'Low Fat', martData$Item_Fat_Content)
+martData$Item_Fat_Content[martData$Item_Fat_Content=='LF'] <- 'Low Fat' 
 sum(martData$Item_Fat_Content=='low fat')
-martData$Item_Fat_Content <- ifelse(martData$Item_Fat_Content == 'low fat', 'Low Fat', martData$Item_Fat_Content)
+martData$Item_Fat_Content[martData$Item_Fat_Content=='low fat'] <- 'Low Fat'
 sum(martData$Item_Fat_Content=='reg')
-martData$Item_Fat_Content <- ifelse(martData$Item_Fat_Content == 'reg', 'Regular', martData$Item_Fat_Content)
-levels(martData$Item_Fat_Content) <- c('Low Fat', 'Regular')
+martData$Item_Fat_Content[martData$Item_Fat_Content=='reg'] <- 'Regular'
+martData$Item_Fat_Content <- factor(martData$Item_Fat_Content)
+levels(martData$Item_Fat_Content)
 
 # Clustering is unsupervised so remove the response variable
 clusData <- martData %>% select(Item_Weight, Item_Fat_Content, Item_Type, Item_Visibility, Item_MRP, 
