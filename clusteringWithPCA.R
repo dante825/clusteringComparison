@@ -63,11 +63,6 @@ dummyDf <- dummy.data.frame(clusData, names = c('Item_Fat_Content', 'Item_Type',
 # All the data is in numeric form
 str(dummyDf)
 
-# Divide the dataset into train and test, PCA should be perform on the train only
-# pca.train <- dummyDf[1:nrow(trainData),]
-# pca.test <- dummyDf[-(1:nrow(trainData))]
-
-## Principal Component Analysis (PCA)
 impFeatures <- prcomp(dummyDf, scale. = T)
 names(impFeatures)
 
@@ -99,17 +94,18 @@ propVariance[1:20]
 
 # How many of these feature to select?
 # Scree plot
-plot(propVariance, xlab = 'Principal Component', ylab = 'Proportion of Variance Explained', type = 'b')
+plot(propVariance, xlab = 'Principal Component', ylab = 'Proportion of Variance Explained', type = 'b', 
+     main = 'Scree Plot of proportion of variance')
 
-# The graph shows around 28 or 29 component explain 98% variance of the dataset
+# The graph shows around 25 component explain 98% variance of the dataset
 
 # Confirmation check with a cumulative variance plot
 plot(cumsum(propVariance), xlab = 'Principal Component', ylab = 'Cumulative Proportion of Variance Explained', 
-     type = 'b')
+     type = 'b', main = 'Cumulative Proportion of Variance')
 
-train2 <- data.frame(Item_Outlet_Sales = martData$Item_Outlet_Sales, impFeatures$x)
+train2 <- data.frame(impFeatures$x)
 
-train2 <- train2[,1:30]
+train2 <- train2[,1:25]
 
 ###################### K-means ####################
 # Elbow method to detect the best number of clusters for K-means
@@ -121,7 +117,6 @@ for (i in 1:10) {
 
 plot(x = 1:10, y = vec, type = 'b', main = 'The Elbow Method', xlab = 'Number of Clusters', ylab = 'WCSS')
 
-# From the chart of the elbow method, the best number of cluster or k value is 4
 # Fitting kmeans to the dataset
 library(cluster)
 
@@ -130,10 +125,8 @@ kmeans <- kmeans(x = train2, centers = 4)
 ykmeans <- kmeans$cluster
 
 # Visualizing the clusters
-clusplot(train2, ykmeans, lines = 0, shade = T, color = T, labels = 2, plotchar = F, span = T, 
+clusplot(train2, ykmeans, lines = 0, shade = T, color = T, plotchar = F, span = T, 
          main = 'Clusters of Items', xlab = 'X', ylab = 'Y')
-
-
 
 ################## Hierarchical clustering ##################
 # Using the dendrogram to find the optimal number of clusters
@@ -147,12 +140,12 @@ plot(hc,
 y_hc = cutree(hc, 3)
 
 # Visualising the clusters
+library(cluster)
 clusplot(train2,
          y_hc,
          lines = 0,
          shade = TRUE,
          color = TRUE,
-         labels= 2,
          plotchar = FALSE,
          span = TRUE,
          main = paste('Clusters of items'),
