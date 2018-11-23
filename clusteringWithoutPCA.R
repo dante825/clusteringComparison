@@ -93,9 +93,11 @@ gowerDist <- daisy(hierData, metric = 'gower')
 hc <- hclust(gowerDist, method = 'complete')
 plot(hc, main = 'Agglomerative, complete linkage', xlab = 'Items', ylab = 'Gower distance')
 
-# Using the dendrogram to find the optimal number of clusters
-# hc <- hclust(d = dist(hierData, method = 'euclidean'), method = 'ward.D')
-# plot(hc, main = paste('Dendrogram'), xlab = 'Items', ylab = 'Euclidean distances')
+# Try hierarchical clustering with kmeans data
+hc <- hclust(d = dist(kmeansData, method = 'euclidean'), method = 'ward.D')
+plot(hc, main = paste('Dendrogram'), xlab = 'Items', ylab = 'Euclidean distances')
+y_hc = cutree(hc, 4)
+clusplot(kmeansData, y_hc, lines=0, share=T, color=T, plotchar=T, span=T, main='Clusters of Items', xlab='X', ylab='Y')
 
 # Get the number of clusters based on the dendogram
 y_hc = cutree(hc, 6)
