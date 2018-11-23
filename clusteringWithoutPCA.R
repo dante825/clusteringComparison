@@ -1,21 +1,23 @@
 # Clustering Algorithm Comparison
 # Loading the data
 trainingPath <- file.path('./bigMartTrain.csv')
-trainData <- read.csv(trainingPath)
-dim(trainData)
-
-testingPath <- file.path('./bigMartTest.csv')
-testData <- read.csv(testingPath)
-dim(testData)
-
-# Add a column to the test data
-testData$Item_Outlet_Sales <- 1
-
-# Merge the train data and test data into 1
-martData <- rbind(trainData, testData)
+martData <- read.csv(trainingPath)
 dim(martData)
 head(martData)
 str(martData)
+
+# testingPath <- file.path('./bigMartTest.csv')
+# testData <- read.csv(testingPath)
+# dim(testData)
+
+# Add a column to the test data
+# testData$Item_Outlet_Sales <- 1
+
+# Merge the train data and test data into 1
+# martData <- rbind(trainData, testData)
+# dim(martData)
+# head(martData)
+# str(martData)
 
 ############### Data Preprocessing ###################s
 library(dplyr)
@@ -48,22 +50,24 @@ martData$Item_Fat_Content[martData$Item_Fat_Content=='reg'] <- 'Regular'
 martData$Item_Fat_Content <- factor(martData$Item_Fat_Content)
 levels(martData$Item_Fat_Content)
 
-# Clustering is unsupervised so remove the response variable
-clusData <- martData %>% select(Item_Weight, Item_Fat_Content, Item_Type, Item_Visibility, Item_MRP, 
-                                Outlet_Establishment_Year, Outlet_Size, Outlet_Type, Outlet_Location_Type)
+# Cleaning the levels of the factor Outlet_Size
+levels(martData$Outlet_Size) <- c('Unknown', 'High', 'Medium', 'Small')
+
+# Clustering is unsupervised so remove the response variable and the identifiers (which are not variables)
+# Just keep the variables in numeric form
+clusData <- martData %>% select(Item_Weight, Item_Visibility, Item_MRP)
 
 colnames(clusData)
 str(clusData)
+dim(clusData)
 
 ###################### K-means ####################
-# Just using the features with numeric value for clustering
-kmeansData <- clusData %>% select(Item_MRP, Item_Weight, Item_Visibility)
 
 # Elbow method to detect the best number of clusters for K-means
 set.seed(123)
 vec <- vector()
 for (i in 1:10) {
-  vec[i] = sum(kmeans(kmeansData, i)$withinss)
+  vec[i] = sum(kmeans(clusData, i)$withinss)
 }
 
 plot(x = 1:10, y = vec, type = 'b', main = 'The Elbow Method', xlab = 'Number of Clusters', ylab = 'WCSS')
@@ -73,43 +77,46 @@ plot(x = 1:10, y = vec, type = 'b', main = 'The Elbow Method', xlab = 'Number of
 library(cluster)
 
 set.seed(123)
-kmeans <- kmeans(x = kmeansData, centers = 4)
+kmeans <- kmeans(x = clusData, centers = 4)
 ykmeans <- kmeans$cluster
 
-# Visualizing the clusters
-clusplot(kmeansData, ykmeans, lines = 0, shade = T, color = T, plotchar = F, span = T, 
-         main = 'Clusters of Items', xlab = 'X', ylab = 'Y')
+table(ykmeans)
 
+# Visualizing the clusters
+clusplot(clusData, ykmeans, lines = 0, shade = T, color = T, plotchar = F, span = T, 
+         main = 'Clusters of Items', xlab = 'X', ylab = 'Y')
 
 
 ################## Hierarchical clustering ##################
 library(cluster)
-hierData <- clusData %>% select(Item_MRP, Item_Weight, Item_Visibility, Item_Fat_Content, Item_Type, Outlet_Type,
-                                Outlet_Size)
+# hierData <- clusData %>% select(Item_MRP, Item_Weight, Item_Visibility, Item_Fat_Content, Item_Type, Outlet_Type,
+#                                 Outlet_Size)
 
-gowerDist <- daisy(hierData, metric = 'gower')
+# gowerDist <- daisy(hierData, metric = 'gower')
 
 # Aggloromerative clustering Dendogram
-hc <- hclust(gowerDist, method = 'complete')
-plot(hc, main = 'Agglomerative, complete linkage', xlab = 'Items', ylab = 'Gower distance')
+# hc <- hclust(gowerDist, method = 'complete')
+# plot(hc, main = 'Agglomerative, complete linkage', xlab = 'Items', ylab = 'Gower distance')
 
 # Try hierarchical clustering with kmeans data
-hc <- hclust(d = dist(kmeansData, method = 'euclidean'), method = 'ward.D')
+hc <- hclust(d = dist(clusData, method = 'euclidean'), method = 'ward.D')
 plot(hc, main = paste('Dendrogram'), xlab = 'Items', ylab = 'Euclidean distances')
 y_hc = cutree(hc, 4)
-clusplot(kmeansData, y_hc, lines=0, share=T, color=T, plotchar=T, span=T, main='Clusters of Items', xlab='X', ylab='Y')
+table(y_hc)
+clusplot(clusData, y_hc, lines=0, shade=TRUE, color=TRUE, plotchar=FALSE, span=TRUE, 
+         main='Clusters of Items', xlab='X', ylab='Y')
 
 # Get the number of clusters based on the dendogram
-y_hc = cutree(hc, 6)
+# y_hc = cutree(hc, 6)
 
 # Visualising the clusters
-clusplot(hierData,
-         y_hc,
-         lines = 0,
-         shade = TRUE,
-         color = TRUE,
-         plotchar = FALSE,
-         span = TRUE,
-         main = paste('Clusters of items'),
-         xlab = 'X',
-         ylab = 'Y')
+# clusplot(hierData,
+#          y_hc,
+#          lines = 0,
+#          shade = TRUE,
+#          color = TRUE,
+#          plotchar = FALSE,
+#          span = TRUE,
+#          main = paste('Clusters of items'),
+#          xlab = 'X',
+#          ylab = 'Y')

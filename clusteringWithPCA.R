@@ -1,21 +1,23 @@
 # Clustering Algorithm Comparison
 # Loading the data
 trainingPath <- file.path('./bigMartTrain.csv')
-trainData <- read.csv(trainingPath)
-dim(trainData)
-
-testingPath <- file.path('./bigMartTest.csv')
-testData <- read.csv(testingPath)
-dim(testData)
-
-# Add a column to the test data
-testData$Item_Outlet_Sales <- 1
-
-# Merge the train data and test data into 1
-martData <- rbind(trainData, testData)
+martData <- read.csv(trainingPath)
 dim(martData)
 head(martData)
 str(martData)
+
+# testingPath <- file.path('./bigMartTest.csv')
+# testData <- read.csv(testingPath)
+# dim(testData)
+
+# Add a column to the test data
+# testData$Item_Outlet_Sales <- 1
+
+# Merge the train data and test data into 1
+# martData <- rbind(trainData, testData)
+# dim(martData)
+# head(martData)
+# str(martData)
 
 ############### Data Preprocessing ###################s
 library(dplyr)
@@ -38,7 +40,7 @@ sum(martData$Item_Visibility == 0)
 martData$Item_Visibility <- ifelse(martData$Item_Visibility == 0, median(martData$Item_Visibility),
                                    martData$Item_Visibility)
 
-# Cleaning the levels of the factor
+# Cleaning the levels of the factor of Item_Fat_Content
 sum(martData$Item_Fat_Content=='LF')
 martData$Item_Fat_Content[martData$Item_Fat_Content=='LF'] <- 'Low Fat' 
 sum(martData$Item_Fat_Content=='low fat')
@@ -48,9 +50,12 @@ martData$Item_Fat_Content[martData$Item_Fat_Content=='reg'] <- 'Regular'
 martData$Item_Fat_Content <- factor(martData$Item_Fat_Content)
 levels(martData$Item_Fat_Content)
 
-# Clustering is unsupervised so remove the response variable
+# Cleaning the levels of the factor Outlet_Size
+levels(martData$Outlet_Size) <- c('Unknown', 'High', 'Medium', 'Small')
+
+# Clustering is unsupervised so remove the response variable and the identifiers (which are not variables)
 clusData <- martData %>% select(Item_Weight, Item_Fat_Content, Item_Type, Item_Visibility, Item_MRP, 
-                                Outlet_Establishment_Year, Outlet_Size, Outlet_Type, Outlet_Location_Type)
+                                Outlet_Size, Outlet_Type, Outlet_Location_Type)
 
 colnames(clusData)
 str(clusData)
@@ -58,8 +63,8 @@ str(clusData)
 ############ Principal Component Analysis (PCA) #############
 ## Convert the categorical variables into continuous variables
 library(dummies)
-dummyDf <- dummy.data.frame(clusData, names = c('Item_Fat_Content', 'Item_Type', 'Outlet_Establishmen_Year',
-                                                'Outlet_Size', 'Outlet_Type', 'Outlet_Location_Type'))
+dummyDf <- dummy.data.frame(clusData, names = c('Item_Fat_Content', 'Item_Type','Outlet_Size',
+                                                'Outlet_Type', 'Outlet_Location_Type'))
 # All the data is in numeric form
 str(dummyDf)
 
@@ -121,8 +126,10 @@ plot(x = 1:10, y = vec, type = 'b', main = 'The Elbow Method', xlab = 'Number of
 library(cluster)
 
 set.seed(123)
-kmeans <- kmeans(x = train2, centers = 4)
+kmeans <- kmeans(x = train2, centers = 8)
 ykmeans <- kmeans$cluster
+
+table(ykmeans)
 
 # Visualizing the clusters
 clusplot(train2, ykmeans, lines = 0, shade = T, color = T, plotchar = F, span = T, 
@@ -138,6 +145,8 @@ plot(hc,
 
 # Fitting Hierarchical Clustering to the dataset
 y_hc = cutree(hc, 3)
+
+table(y_hc)
 
 # Visualising the clusters
 library(cluster)
