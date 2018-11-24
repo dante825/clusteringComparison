@@ -50,7 +50,6 @@ str(clusData)
 dim(clusData)
 
 ###################### K-means ####################
-
 # Elbow method to detect the best number of clusters for K-means
 set.seed(123)
 vec <- vector()
@@ -75,7 +74,6 @@ table(ykmeans)
 clusplot(clusData, ykmeans, lines = 0, shade = T, color = T, plotchar = F, span = T, 
          main = 'K-means clustering of Big Mart Sales data', xlab = 'X', ylab = 'Y')
 
-
 ################## Hierarchical clustering ##################
 library(cluster)
 
@@ -96,8 +94,7 @@ clusplot(clusData, y_hc, lines=0, shade=TRUE, color=TRUE, plotchar=FALSE, span=T
 
 ########### Hierarchical Clustering with Categorical Values ###########
 # Includes some categorical values in the data
-hierData <- martData %>% select(Item_MRP, Item_Weight, Item_Visibility, Item_Fat_Content, Item_Type, Outlet_Type,
-                                Outlet_Size)
+hierData <- martData %>% select(Item_Fat_Content, Item_Type, Outlet_Type, Outlet_Size)
 
 # Use gower distance instead of euclidean to calculate the similarity
 gowerDist <- daisy(hierData, metric = 'gower')
@@ -107,8 +104,8 @@ hc <- hclust(gowerDist, method = 'complete')
 plot(hc, main = 'Agglomerative, complete linkage, Gower distance', xlab = 'Items', ylab = 'Gower distance')
 
 # Get the number of clusters based on the dendogram
-rect.hclust(hc, k = 4, border = "red")
-y_hc = cutree(hc, 4)
+rect.hclust(hc, k = 6, border = "red")
+y_hc = cutree(hc, 6)
 
 # Cluster membership
 table(y_hc)
