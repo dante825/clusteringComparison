@@ -6,19 +6,6 @@ dim(martData)
 head(martData)
 str(martData)
 
-# testingPath <- file.path('./bigMartTest.csv')
-# testData <- read.csv(testingPath)
-# dim(testData)
-
-# Add a column to the test data
-# testData$Item_Outlet_Sales <- 1
-
-# Merge the train data and test data into 1
-# martData <- rbind(trainData, testData)
-# dim(martData)
-# head(martData)
-# str(martData)
-
 ############### Data Preprocessing ###################s
 library(dplyr)
 
@@ -80,43 +67,51 @@ set.seed(123)
 kmeans <- kmeans(x = clusData, centers = 4)
 ykmeans <- kmeans$cluster
 
+# Cluster membership
 table(ykmeans)
 
 # Visualizing the clusters
 clusplot(clusData, ykmeans, lines = 0, shade = T, color = T, plotchar = F, span = T, 
-         main = 'Clusters of Items', xlab = 'X', ylab = 'Y')
+         main = 'K-means clustering of Big Mart Sales data', xlab = 'X', ylab = 'Y')
 
 
 ################## Hierarchical clustering ##################
 library(cluster)
-# hierData <- clusData %>% select(Item_MRP, Item_Weight, Item_Visibility, Item_Fat_Content, Item_Type, Outlet_Type,
-#                                 Outlet_Size)
 
-# gowerDist <- daisy(hierData, metric = 'gower')
+# Using Euclidean distance on the data with numerical values
+hc <- hclust(d = dist(clusData, method = 'euclidean'), method = 'ward.D')
+plot(hc, main = 'Dendrogram with Euclidean distance', xlab = 'Items', ylab = 'Euclidean distances')
+
+# Get the number of cluster based on the dendogram
+rect.hclust(hc, k = 4, border = "red")
+y_hc = cutree(hc, 4)
+
+# Cluster membership
+table(y_hc)
+
+clusplot(clusData, y_hc, lines=0, shade=TRUE, color=TRUE, plotchar=FALSE, span=TRUE, 
+         main='Hierarchical clustering of Big Mart Sales data', xlab='X', ylab='Y')
+
+
+########### Hierarchical Clustering with Categorical Values ###########
+# Includes some categorical values in the data
+hierData <- martData %>% select(Item_MRP, Item_Weight, Item_Visibility, Item_Fat_Content, Item_Type, Outlet_Type,
+                                Outlet_Size)
+
+# Use gower distance instead of euclidean to calculate the similarity
+gowerDist <- daisy(hierData, metric = 'gower')
 
 # Aggloromerative clustering Dendogram
-# hc <- hclust(gowerDist, method = 'complete')
-# plot(hc, main = 'Agglomerative, complete linkage', xlab = 'Items', ylab = 'Gower distance')
-
-# Try hierarchical clustering with kmeans data
-hc <- hclust(d = dist(clusData, method = 'euclidean'), method = 'ward.D')
-plot(hc, main = paste('Dendrogram'), xlab = 'Items', ylab = 'Euclidean distances')
-y_hc = cutree(hc, 4)
-table(y_hc)
-clusplot(clusData, y_hc, lines=0, shade=TRUE, color=TRUE, plotchar=FALSE, span=TRUE, 
-         main='Clusters of Items', xlab='X', ylab='Y')
+hc <- hclust(gowerDist, method = 'complete')
+plot(hc, main = 'Agglomerative, complete linkage, Gower distance', xlab = 'Items', ylab = 'Gower distance')
 
 # Get the number of clusters based on the dendogram
-# y_hc = cutree(hc, 6)
+rect.hclust(hc, k = 4, border = "red")
+y_hc = cutree(hc, 4)
+
+# Cluster membership
+table(y_hc)
 
 # Visualising the clusters
-# clusplot(hierData,
-#          y_hc,
-#          lines = 0,
-#          shade = TRUE,
-#          color = TRUE,
-#          plotchar = FALSE,
-#          span = TRUE,
-#          main = paste('Clusters of items'),
-#          xlab = 'X',
-#          ylab = 'Y')
+clusplot(hierData, y_hc, lines = 0, shade = TRUE, color = TRUE, plotchar = FALSE, span = TRUE, 
+         main = "Hierarchical clustering with Gower's distance metric", xlab = 'X', ylab = 'Y')

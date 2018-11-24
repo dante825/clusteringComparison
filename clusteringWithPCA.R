@@ -6,19 +6,6 @@ dim(martData)
 head(martData)
 str(martData)
 
-# testingPath <- file.path('./bigMartTest.csv')
-# testData <- read.csv(testingPath)
-# dim(testData)
-
-# Add a column to the test data
-# testData$Item_Outlet_Sales <- 1
-
-# Merge the train data and test data into 1
-# martData <- rbind(trainData, testData)
-# dim(martData)
-# head(martData)
-# str(martData)
-
 ############### Data Preprocessing ###################s
 library(dplyr)
 
@@ -129,34 +116,25 @@ set.seed(123)
 kmeans <- kmeans(x = train2, centers = 8)
 ykmeans <- kmeans$cluster
 
+# Cluster membership
 table(ykmeans)
 
 # Visualizing the clusters
 clusplot(train2, ykmeans, lines = 0, shade = T, color = T, plotchar = F, span = T, 
-         main = 'Clusters of Items', xlab = 'X', ylab = 'Y')
+         main = 'K-means clustering with Big Mart Sales data', xlab = 'X', ylab = 'Y')
 
 ################## Hierarchical clustering ##################
 # Using the dendrogram to find the optimal number of clusters
 hc = hclust(d = dist(train2, method = 'euclidean'), method = 'ward.D')
-plot(hc,
-     main = paste('Dendrogram'),
-     xlab = 'Items',
-     ylab = 'Euclidean distances')
+plot(hc, main = 'Dendrogram', xlab = 'Items', ylab = 'Euclidean distances')
 
 # Fitting Hierarchical Clustering to the dataset
+rect.hclust(hc, k = 3, border = "red")
 y_hc = cutree(hc, 3)
 
 table(y_hc)
 
 # Visualising the clusters
 library(cluster)
-clusplot(train2,
-         y_hc,
-         lines = 0,
-         shade = TRUE,
-         color = TRUE,
-         plotchar = FALSE,
-         span = TRUE,
-         main = paste('Clusters of items'),
-         xlab = 'X',
-         ylab = 'Y')
+clusplot(train2, y_hc, lines = 0, shade = TRUE, color = TRUE, plotchar = FALSE, span = TRUE, 
+         main = 'Hierarchical clustering of the Big Mart Sales data', xlab = 'X', ylab = 'Y')
