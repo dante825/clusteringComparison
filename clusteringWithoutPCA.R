@@ -40,6 +40,7 @@ levels(martData$Item_Fat_Content)
 # Cleaning the levels of the factor Outlet_Size
 levels(martData$Outlet_Size) <- c('Unknown', 'High', 'Medium', 'Small')
 
+################# Data Selection #######################
 # Clustering is unsupervised so remove the response variable and the identifiers (which are not variables)
 # Just keep the variables in numeric form
 clusData <- martData %>% select(Item_Weight, Item_Visibility, Item_MRP)
