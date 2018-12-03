@@ -59,6 +59,14 @@ for (i in 1:10) {
 
 plot(x = 1:10, y = vec, type = 'b', main = 'The Elbow Method', xlab = 'Number of Clusters', ylab = 'WCSS')
 
+library(ggplot2)
+elbowDf <- data.frame(x = 1:10, y=vec)
+ggplot(data=elbowDf, aes(x=x, y=y, group=1)) +
+  geom_line() +
+  ggtitle('The Elbow Method') +
+  xlab('Number of clusters') +
+  ylab('WCSS')
+
 # From the chart of the elbow method, the best number of cluster or k value is 4
 # Fitting kmeans to the dataset
 library(cluster)
