@@ -11,7 +11,7 @@ library(dplyr)
 
 # Checking the NA values
 sum(is.na(martData))
-View(martData[!complete.cases(martData),])
+sapply(martData, function (x) sum(is.na(x)))
 sum(is.na(martData$Item_Weight))
 
 # Impute the NAs with the median
